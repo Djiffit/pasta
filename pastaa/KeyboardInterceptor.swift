@@ -12,42 +12,41 @@ import Cocoa
 import SwiftUI
 
 class KeyboardInterceptor {
-    var window: NSWindow?
+    var window: NSWindow!
+    var prevTop: NSRunningApplication?
     var currModal: NSApplication.ModalResponse?
     var modalSession: NSApplication.ModalSession?
-    let hotKey = HotKey(key: .r, modifiers: [.command, .option])
-    let toggleWindow = HotKey(key: .v, modifiers: [.command, .option])
+    let hotKey = HotKey(key: .p, modifiers: [.option])
+    let toggleWindow = HotKey(key: .v, modifiers: [.option])
     
-    init() {
-        
+    init(window: NSWindow, clip: ClipboardManager) {
         hotKey.keyDownHandler = { [weak self] in
-            self?.setWindowState(active: false)
+            clip.copyToClipboard()
         }
         
         toggleWindow.keyDownHandler = { [weak self] in
-            self?.setWindowState(active: true)
+            self?.toggleWindowState()
         }
+        
+        self.window = window
     }
     
-    func setWindowState(active: Bool) {
-        var app = NSRunningApplication.current
-        if (active) {
+    func toggleWindowState() {
+        let app = NSRunningApplication.current
+        if window.isVisible {
+            NSApp.abortModal()
+            window.orderOut(nil)
+            prevTop!.activate(options: .activateIgnoringOtherApps)
+        } else {
+            prevTop = NSWorkspace.shared.frontmostApplication!
             if !app.isActive {
                 app.activate(options: .activateIgnoringOtherApps)
             }
-            if window == nil {
-                window = initializeWindow()
-            }
-            if !window!.isVisible {
-                NSApp.runModal(for: window!)
-                window?.center()
-            }
-        } else {
-            NSApp.abortModal()
-            window?.orderOut(nil)
-            window?.orderOut(nil)
+            NSApp.runModal(for: window)
+            window.center()
         }
     }
+    
 }
 
 

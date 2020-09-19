@@ -11,11 +11,21 @@ import HotKey
 import Cocoa
 import SwiftUI
 
-func writeClipboard(content: String) {
-    let pasteboard = NSPasteboard.general
-    pasteboard.declareTypes([NSPasteboard.PasteboardType.string], owner: nil)
-    pasteboard.setString(content, forType: NSPasteboard.PasteboardType.string)
+class ClipboardManager {
+    let listener = ClipboardListener()
+    
+    func copyToClipboard() {
+        let random = Int.random(in: 0..<listener.clipboardHistory.count)
+        writeClipboard(content: listener.clipboardHistory[random])
+    }
+
+    func writeClipboard(content: String) {
+        let pasteboard = NSPasteboard.general
+        pasteboard.declareTypes([NSPasteboard.PasteboardType.string], owner: nil)
+        pasteboard.setString(content, forType: NSPasteboard.PasteboardType.string)
+    }
 }
+
 
 class ClipboardListener {
     let interval = 1
@@ -30,11 +40,11 @@ class ClipboardListener {
     @objc
     func checkClipboard() {
         let currClipboard = NSPasteboard.general.string(forType: NSPasteboard.PasteboardType.string)
-        print(currClipboard)
         if currClipboard != previous {
             previous = currClipboard ?? ""
             clipboardHistory.append(previous)
+            print("Clipboard changed \(previous)")
         }
-        print(timer.fireDate)
     }
 }
+

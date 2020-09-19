@@ -30,6 +30,7 @@ func initializeWindow() -> NSWindow {
     window.standardWindowButton(NSWindow.ButtonType.closeButton)!.isHidden = true
     window.standardWindowButton(NSWindow.ButtonType.miniaturizeButton)!.isHidden = true
     window.standardWindowButton(NSWindow.ButtonType.zoomButton)!.isHidden = true
+    window.orderOut(nil)
     
     
     return window
