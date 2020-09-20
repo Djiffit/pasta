@@ -21,7 +21,7 @@ class KeyboardInterceptor {
     
     init(window: NSWindow, clip: ClipboardManager) {
         hotKey.keyDownHandler = { [weak self] in
-            clip.copyToClipboard()
+            clip.copyToClipboard(msg: "asdasdASD")
         }
         
         toggleWindow.keyDownHandler = { [weak self] in
@@ -36,7 +36,9 @@ class KeyboardInterceptor {
         if window.isVisible {
             NSApp.abortModal()
             window.orderOut(nil)
-            prevTop!.activate(options: .activateIgnoringOtherApps)
+            if prevTop != nil {
+                prevTop!.activate(options: .activateIgnoringOtherApps)
+            }
         } else {
             prevTop = NSWorkspace.shared.frontmostApplication!
             if !app.isActive {
