@@ -49,7 +49,7 @@ extension View {
 
 struct ContentView: View {
     
-    @ObservedObject var clipboard = ClipboardManager()
+    @ObservedObject var clipboard: ClipboardManager
     
     init(clipboardManager: ClipboardManager) {
         clipboard = clipboardManager
@@ -78,7 +78,6 @@ struct ContentView: View {
                     }
                     .tabItem {
                         Text(group)
-                        Image("square.and.pencil")
                     }
                     .tag(group)
                 }

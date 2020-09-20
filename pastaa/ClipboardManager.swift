@@ -16,17 +16,17 @@ class ClipboardManager: ObservableObject {
     var previous = ""
     var timer = Timer()
     @Published var activeTab = "main"
-    @Published var currentGroups: [String] = ["main", "test", "masters"]
+    @Published var currentGroups: [String] = ["main"]
     @Published var activeCopy = ""
     @Published var clipboardGroups = [String : [String]]()
     
     init() {
-        clipboardGroups["main"] = ["OG"]
-        clipboardGroups["test"] = ["OG"]
-        clipboardGroups["masters"] = []
-        for el in 0...100 {
-            clipboardGroups["main"]?.append("Tester master \(el)")
-        }
+        clipboardGroups["main"] = []
+//        clipboardGroups["test"] = ["OG"]
+//        clipboardGroups["masters"] = []
+//        for el in 0...100 {
+//            clipboardGroups["main"]?.append("Tester master \(el)")
+//        }
         timer = Timer.scheduledTimer(timeInterval: interval, target: self, selector: #selector(self.checkClipboard), userInfo: nil, repeats: true)
         reset()
     }
@@ -38,6 +38,7 @@ class ClipboardManager: ObservableObject {
             previous = currClipboard ?? ""
             if previous.count > 0 {
                 addCommandToGroup(cmd: previous, group: "main")
+                StorageManager.saveClipboardState(clipboard: self)
             }
         }
     }
@@ -71,6 +72,13 @@ class ClipboardManager: ObservableObject {
         }
     }
     
+    func shiftTab(change: Int) {
+        let currInd = currentGroups.index(of: activeTab)
+        let newPos = mod(currInd! + change, currentGroups.count)
+        currentGroups[currInd!] = currentGroups[newPos]
+        currentGroups[newPos] = activeTab
+    }
+    
     func changeElem(change: Int) {
         let currGroup = clipboardGroups[activeTab]!
         if activeCopy != "" {
@@ -98,7 +106,7 @@ class ClipboardManager: ObservableObject {
     }
     
     func rename(newName: String) {
-        if !currentGroups.contains(newName) {
+        if !currentGroups.contains(newName) && activeTab != "main" {
             clipboardGroups[newName] = clipboardGroups[activeTab]
             let ind = currentGroups.firstIndex(of: activeTab)
             clipboardGroups.removeValue(forKey: activeTab)

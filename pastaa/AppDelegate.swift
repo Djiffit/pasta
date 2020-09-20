@@ -36,7 +36,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var deleting = false
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        clipboard = ClipboardManager()
+        clipboard = StorageManager.createClipboard()
         window = initializeWindow()
         AppDelegate.globalWindow = window
         keyboardListener = KeyboardInterceptor(window: window, clip: clipboard)
@@ -76,6 +76,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
                 clipboard.moveActiveElem(change: -1)
             case "e":
                 clipboard.moveActiveElem(change: 1)
+            case "H":
+                clipboard.shiftTab(change: -1)
+            case "L":
+                clipboard.shiftTab(change: 1)
             case "o":
                 clipboard.openLink()
             case "v":
@@ -100,7 +104,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     override func awakeFromNib() {
         super.awakeFromNib()
         statusBarItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusBarItem?.button?.title = "💩📋💩"
+        statusBarItem?.button?.title = "💩💩📋💩💩"
     }
     
     @objc func togglePopover(_ sender: AnyObject?) {
@@ -129,8 +133,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.hidesOnDeactivate = true
         window.canHide = true
         window.collectionBehavior = NSWindow.CollectionBehavior.moveToActiveSpace
-//        window.titleVisibility = .hidden
-//        window.titlebarAppearsTransparent = true
+        window.titleVisibility = .hidden
+        window.titlebarAppearsTransparent = true
         window.standardWindowButton(NSWindow.ButtonType.closeButton)!.isHidden = true
         window.standardWindowButton(NSWindow.ButtonType.miniaturizeButton)!.isHidden = true
         window.standardWindowButton(NSWindow.ButtonType.zoomButton)!.isHidden = true
