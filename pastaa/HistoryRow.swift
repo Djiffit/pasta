@@ -20,7 +20,7 @@ struct HistoryRow: View {
         self.text = text.split(separator: "\n").map({(cmd) -> String in
             return cmd.trimmingCharacters(in: .whitespacesAndNewlines)
         } ).joined(separator: " ")
-        link = URL(string: text) != nil
+        link = URL(string: text) != nil && text.contains("/") && text.contains(".")
         self.active = active
         self.setActive = setActive
     }
@@ -31,15 +31,17 @@ struct HistoryRow: View {
                 Text(text)
                     .underline(link)
 //                    .foregroundColor(link ? .blue : .green)
-                    .foregroundColor(active ? Color(NSColor.selectedTextColor) : Color(NSColor.textColor))
-                    .font(.system(size:13))
-                    .lineLimit(nil)
+                    .foregroundColor(active ? Color(NSColor.controlTextColor) : Color(NSColor.textColor))
+                    .font(.system(size: 12))
+                    .fontWeight(.light)
+                    .lineLimit(1)
+                    .frame(height: 10)
                 
             }.padding(.vertical, 1).padding(.top, 8).padding(.horizontal, 20)
             Divider()
         }.padding(.horizontal, 15).background(active ? Color(NSColor.selectedTextBackgroundColor): Color(NSColor.textBackgroundColor)).cornerRadius(5).overlay(
             RoundedRectangle(cornerRadius: 5)
-                .stroke(Color.gray.opacity(0.25), lineWidth: 1))
+                .stroke(Color.gray.opacity(0.25), lineWidth: 1)).padding(.horizontal, 10)
     }
 }
 

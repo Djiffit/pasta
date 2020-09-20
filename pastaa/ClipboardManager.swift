@@ -16,52 +16,69 @@ class ClipboardManager: ObservableObject {
     var previous = ""
     var timer = Timer()
     @Published var activeTab = "main"
-    @Published var clipboardHistory: [String] = []
     @Published var currentGroups: [String] = ["main", "test", "masters"]
     @Published var activeCopy = ""
-    
-    var clipboardGroups = [String : [String]]()
+    @Published var clipboardGroups = [String : [String]]()
     
     init() {
         clipboardGroups["main"] = ["OG"]
         clipboardGroups["test"] = ["OG"]
         clipboardGroups["masters"] = []
-        for el in 0...50 {
+        for el in 0...100 {
             clipboardGroups["main"]?.append("Tester master \(el)")
         }
         timer = Timer.scheduledTimer(timeInterval: interval, target: self, selector: #selector(self.checkClipboard), userInfo: nil, repeats: true)
         reset()
     }
-    
+
     @objc
     func checkClipboard() {
         let currClipboard = NSPasteboard.general.string(forType: NSPasteboard.PasteboardType.string)
         if currClipboard != previous {
             previous = currClipboard ?? ""
-            
             if previous.count > 0 {
-                if ((clipboardGroups["main"]?.contains(previous)) != nil) {
-                    clipboardGroups["main"]?.removeAll(where: { $0 == previous })
-                }
-                clipboardGroups["main"]?.append(previous)
-                clipboardHistory = clipboardGroups[activeTab]!
+                addCommandToGroup(cmd: previous, group: "main")
             }
         }
     }
     
     func setActiveTab(tab: String) {
         if clipboardGroups.keys.contains(tab) {
-            clipboardHistory = clipboardGroups[tab]!
+            activeTab = tab
+        }
+    }
+    
+    func removeCommandFromGroup(cmd: String) {
+        clipboardGroups[activeTab] = clipboardGroups[activeTab]?.filter({(x) -> Bool in
+            return x != cmd
+        })
+    }
+    
+    func addCommandToGroup(cmd: String, group: String) {
+        if ((clipboardGroups[group]?.contains(cmd)) != nil) {
+            clipboardGroups[group]?.removeAll(where: { $0 == cmd })
+        }
+        clipboardGroups[group]?.append(cmd)
+    }
+    
+    func moveActiveElem(change: Int) {
+        if activeCopy != "" {
+            let temp = activeCopy
+            removeCommandFromGroup(cmd: temp)
+            changeTab(change: change)
+            addCommandToGroup(cmd: temp, group: activeTab)
+            activeCopy = temp
         }
     }
     
     func changeElem(change: Int) {
+        let currGroup = clipboardGroups[activeTab]!
         if activeCopy != "" {
-            let currInd = clipboardHistory.firstIndex(of: activeCopy)
-            activeCopy = clipboardHistory[mod(currInd! + change, clipboardHistory.count)]
+            let currInd = currGroup.firstIndex(of: activeCopy)
+            activeCopy = currGroup[mod(currInd! + change, currGroup.count)]
         } else {
-            if clipboardHistory.count > 0 {
-                activeCopy = clipboardHistory[0]
+            if currGroup.count > 0 {
+                activeCopy = currGroup[currGroup.count - 1]
             }
         }
     }
@@ -74,7 +91,9 @@ class ClipboardManager: ObservableObject {
     
     func openLink() {
         if let link = URL(string: activeCopy) {
-            NSWorkspace.shared.open(link)
+            if activeCopy.contains("/") && activeCopy.contains(".") {
+                NSWorkspace.shared.open((activeCopy.contains("http") ? link : URL(string: "https://" + activeCopy)) ?? link)
+            }
         }
     }
     
@@ -110,9 +129,8 @@ class ClipboardManager: ObservableObject {
     
     func reset() {
         if let elems = clipboardGroups[activeTab] {
-            clipboardHistory = clipboardGroups[activeTab]!
             if elems.count > 0 {
-                activeCopy = elems[0]
+                activeCopy = elems[elems.count - 1]
             } else {
                 activeCopy = ""
             }
@@ -137,7 +155,6 @@ class ClipboardManager: ObservableObject {
         currentGroups.append(tabName)
         clipboardGroups[tabName] = []
         activeTab = tabName
-        clipboardHistory = clipboardGroups[activeTab]!
         reset()
     }
     
@@ -151,14 +168,9 @@ class ClipboardManager: ObservableObject {
         pasteboard.setString(content, forType: NSPasteboard.PasteboardType.string)
     }
     
-    func getActiveList() -> [String] {
-        return clipboardHistory
-    }
-    
     
     func addData(elems: [String]) {
         clipboardGroups[activeTab]!.append(contentsOf: elems)
-        clipboardHistory = clipboardGroups[activeTab]!
     }
 }
 

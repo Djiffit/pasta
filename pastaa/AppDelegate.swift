@@ -23,9 +23,10 @@ class NSWindowKeypresser: NSWindow {
 }
 
 @NSApplicationMain
-class AppDelegate: NSWindow, NSApplicationDelegate {
-
+class AppDelegate: NSObject, NSApplicationDelegate {
+    
     var window: NSWindowKeypresser!
+    static var globalWindow: NSWindowKeypresser?
     var statusBarItem: NSStatusItem!
     var keyboardListener: KeyboardInterceptor!
     var clipboard: ClipboardManager!
@@ -33,13 +34,15 @@ class AppDelegate: NSWindow, NSApplicationDelegate {
     var writingMode = false
     var newPrompt = ""
     var deleting = false
-
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         clipboard = ClipboardManager()
         window = initializeWindow()
+        AppDelegate.globalWindow = window
         keyboardListener = KeyboardInterceptor(window: window, clip: clipboard)
         createStatusBar()
         window.keyListener = self.keyDown
+        
     }
     
     func keyDown(with event: NSEvent) -> Bool {
@@ -69,12 +72,18 @@ class AppDelegate: NSWindow, NSApplicationDelegate {
                 clipboard.changeTab(change: -1)
             case "l":
                 clipboard.changeTab(change: 1)
+            case "q":
+                clipboard.moveActiveElem(change: -1)
+            case "e":
+                clipboard.moveActiveElem(change: 1)
             case "o":
                 clipboard.openLink()
             case "v":
                 clipboard.copyToClipboard()
+                keyboardListener.closeWindow()
             case "p":
                 clipboard.copyToClipboard()
+                keyboardListener.closeWindow()
             case "t":
                 clipboard.createTab()
             case "w":
@@ -95,36 +104,37 @@ class AppDelegate: NSWindow, NSApplicationDelegate {
     }
     
     @objc func togglePopover(_ sender: AnyObject?) {
-         if let button = self.statusBarItem.button {
-              if self.popover.isShown {
-                   self.popover.performClose(sender)
-              } else {
-                   self.popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.minY)
-              }
-         }
+        if let button = self.statusBarItem.button {
+            if self.popover.isShown {
+                self.popover.performClose(sender)
+            } else {
+                self.popover.show(relativeTo: button.bounds, of: button, preferredEdge: NSRectEdge.minY)
+            }
+        }
     }
     
     func initializeWindow() -> NSWindowKeypresser {
         // Create the SwiftUI view that provides the window contents.
         let contentView = ContentView(clipboardManager: clipboard)
-
+        
         // Create the window and set the content view.
         let window = NSWindowKeypresser(
             contentRect: NSRect(x: 0, y: 0, width: 480, height: 300),
             styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
             backing: .buffered, defer: false)
         window.center()
-        window.setFrameAutosaveName("Main Window")
+        window.setFrameAutosaveName("Pasta Master")
         window.contentView = NSHostingView(rootView: contentView)
         window.makeKeyAndOrderFront(nil)
         window.hidesOnDeactivate = true
+        window.canHide = true
         window.collectionBehavior = NSWindow.CollectionBehavior.moveToActiveSpace
-        window.titleVisibility = .hidden
-        window.titlebarAppearsTransparent = true
+//        window.titleVisibility = .hidden
+//        window.titlebarAppearsTransparent = true
         window.standardWindowButton(NSWindow.ButtonType.closeButton)!.isHidden = true
         window.standardWindowButton(NSWindow.ButtonType.miniaturizeButton)!.isHidden = true
         window.standardWindowButton(NSWindow.ButtonType.zoomButton)!.isHidden = true
-//        window.orderOut(nil)
+        //        window.orderOut(nil)
         
         
         return window
@@ -137,8 +147,8 @@ class AppDelegate: NSWindow, NSApplicationDelegate {
         popover.contentViewController = NSHostingController(rootView: ContentView(clipboardManager: clipboard))
         self.popover = popover
         if let button = self.statusBarItem.button {
-             button.image = NSImage(named: "Icon")
-             button.action = #selector(togglePopover(_:))
+            button.image = NSImage(named: "Icon")
+            button.action = #selector(togglePopover(_:))
         }
         
     }

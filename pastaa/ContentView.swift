@@ -14,26 +14,35 @@ struct Sidebar: View {
 //    var setActiveGroup: (String) -> Void
     
     var body: some View {
-        ZStack {
-        List(groups, id: \.self) { group in
-            HStack(alignment: .top) {
-                Text(group)
-                    .foregroundColor(group == activeGroup ? Color.red : Color(NSColor.textColor))
-                    .listStyle(SidebarListStyle())
-                    .font(.system(size: 15))
-                    .frame(width: 155, height: 0)
-                    .padding(.bottom, 20)
-                .padding(.top, 16)
-                    .padding(.trailing, 10)
-            }.frame(minWidth: 155, idealWidth: 155, maxWidth: 155, maxHeight: .infinity)
-        }.frame(minWidth: 155, idealWidth: 155, maxWidth: 155, maxHeight: .infinity)
-        .background(Color(NSColor.controlBackgroundColor))
-        .padding(.trailing, 20)
+        VStack(alignment: .center) {
             HStack {
-                
-            }.background(Color.blue)
-            .blur(radius: 100)
-            .frame(width: 155, height: 1000)
+                List(groups, id: \.self) { group in
+                    Text(group)
+                        .fontWeight(.light)
+                        .foregroundColor(group == activeGroup ? Color.red : Color(NSColor.textColor))
+                        .font(.subheadline)
+                        .multilineTextAlignment(.center)
+                        .padding(.top, 15)
+                        .opacity(0.9)
+                    
+                }.frame(minWidth: 55, idealWidth: 55, maxWidth: 55, maxHeight: .infinity)
+                .listStyle(SidebarListStyle())
+            }
+            .opacity(1)
+            .background(Color(NSColor.windowBackgroundColor))
+        }
+        
+    }
+}
+
+extension View {
+    @ViewBuilder func isHidden(_ hidden: Bool, remove: Bool = false) -> some View {
+        if hidden {
+            if !remove {
+                self.hidden()
+            }
+        } else {
+            self
         }
     }
 }
@@ -48,27 +57,62 @@ struct ContentView: View {
     
     var body: some View {
         HStack {
-            Sidebar(groups: clipboard.currentGroups, activeGroup: clipboard.activeTab)
+//            Sidebar(groups: clipboard.currentGroups, activeGroup: clipboard.activeTab)
       
         VStack {
             
-            VStack {
-                List {
-                    ForEach(self.clipboard.clipboardHistory.reversed(), id: \.self) { cmd in
-                        HStack {
-                            HistoryRow(text: cmd, active: cmd == clipboard.activeCopy, setActive: self.setActive)
+            TabView(selection: $clipboard.activeTab) {
+                ForEach(self.clipboard.currentGroups, id: \.self) { group in
+                    VStack {
+                        ScrollView {
+                            ForEach((self.clipboard.clipboardGroups[group] ?? []).reversed(), id: \.self) { cmd in
+                                HStack {
+                                    HistoryRow(text: cmd, active: cmd == clipboard.activeCopy, setActive: self.setActive)
+                                }
+                                .onTapGesture {
+                                    self.setActive(elem: cmd)
+                                }
+                                
+                            }
                         }
-                        .onTapGesture {
-                            self.setActive(elem: cmd)
-                        }
-                        
                     }
+                    .tabItem {
+                        Text(group)
+                        Image("square.and.pencil")
+                    }
+                    .tag(group)
                 }
             }.padding(.top, 5)
+//            ZStack {
+//                ForEach(self.clipboard.currentGroups, id: \.self) { group in
+//                    List {
+//                        ForEach((self.clipboard.clipboardGroups[group] ?? []).reversed(), id: \.self) { cmd in
+//                            HStack {
+//                                HistoryRow(text: cmd, active: cmd == clipboard.activeCopy, setActive: self.setActive)
+//                            }
+//                            .onTapGesture {
+//                                self.setActive(elem: cmd)
+//                            }
+//                        }
+//                    }
+//                    .isHidden(group != clipboard.activeTab)
+//                }
+//
+//            }.padding(.top, 5)
         }
         }
     }
-    
+//    List {
+//        ForEach(self.clipboard.clipboardHistory.reversed(), id: \.self) { cmd in
+//            HStack {
+//                HistoryRow(text: cmd, active: cmd == clipboard.activeCopy, setActive: self.setActive)
+//            }
+//            .onTapGesture {
+//                self.setActive(elem: cmd)
+//            }
+//
+//        }
+//    }.hidden()
     
     func setActive(elem: String) {
         if NSEvent.modifierFlags.contains(.command) {
@@ -97,14 +141,14 @@ struct TestView: View {
     }
 }
 
-//func createClipboardWithData() -> ClipboardManager {
-//    let clip = ClipboardManager()
-//    clip.addData(elems: ["testing", "123"])
-//    return clip
-//}
+func createClipboardWithData() -> ClipboardManager {
+    let clip = ClipboardManager()
+    clip.addData(elems: ["testing", "123"])
+    return clip
+}
 
-//struct ContentView_Previews: PreviewProvider {
-//    static var previews: some View {
-//        ContentView(clipboardManager: createClipboardWithData())
-//    }
-//}
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView(clipboardManager: createClipboardWithData())
+    }
+}

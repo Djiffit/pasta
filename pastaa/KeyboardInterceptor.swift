@@ -14,31 +14,44 @@ import SwiftUI
 class KeyboardInterceptor {
     var window: NSWindow!
     var prevTop: NSRunningApplication?
-    var currModal: NSApplication.ModalResponse?
-    var modalSession: NSApplication.ModalSession?
     let hotKey = HotKey(key: .p, modifiers: [.option])
     let toggleWindow = HotKey(key: .v, modifiers: [.option])
+    var observer: NSKeyValueObservation
     
     init(window: NSWindow, clip: ClipboardManager) {
+        let app = NSRunningApplication.current
+        observer = app.observe(\.isActive, changeHandler: { (label, change) in
+            if !app.isActive {
+                NSApp.abortModal()
+                NSApp.stopModal()
+                window.orderOut(nil)
+            }
+        })
         hotKey.keyDownHandler = { [weak self] in
             clip.copyToClipboard(msg: "asdasdASD")
+            print(app.isHidden, app.isActive, window.isVisible, window.canHide)
         }
         
         toggleWindow.keyDownHandler = { [weak self] in
             self?.toggleWindowState()
         }
-        
         self.window = window
+    }
+    
+    func closeWindow() {
+        NSApp.abortModal()
+        NSApp.stopModal()
+        
+        window.orderOut(nil)
+        if prevTop != nil {
+            prevTop!.activate(options: .activateIgnoringOtherApps)
+        }
     }
     
     func toggleWindowState() {
         let app = NSRunningApplication.current
         if window.isVisible {
-            NSApp.abortModal()
-            window.orderOut(nil)
-            if prevTop != nil {
-                prevTop!.activate(options: .activateIgnoringOtherApps)
-            }
+            closeWindow()
         } else {
             prevTop = NSWorkspace.shared.frontmostApplication!
             if !app.isActive {
