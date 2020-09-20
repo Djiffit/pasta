@@ -60,14 +60,14 @@ struct ContentView: View {
 //            Sidebar(groups: clipboard.currentGroups, activeGroup: clipboard.activeTab)
       
         VStack {
-            
             TabView(selection: $clipboard.activeTab) {
                 ForEach(self.clipboard.currentGroups, id: \.self) { group in
                     VStack {
-                        ScrollView {
+                        Text(group == "search" ? "Search: " + self.clipboard.currentSearch : " ")
+                        List {
                             ForEach((self.clipboard.clipboardGroups[group] ?? []).reversed(), id: \.self) { cmd in
                                 HStack {
-                                    HistoryRow(text: cmd, active: cmd == clipboard.activeCopy, setActive: self.setActive)
+                                    HistoryRow(text: cmd, active: cmd == self.clipboard.activeCopy, setActive: self.setActive)
                                 }
                                 .onTapGesture {
                                     self.setActive(elem: cmd)

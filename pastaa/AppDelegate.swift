@@ -31,9 +31,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var keyboardListener: KeyboardInterceptor!
     var clipboard: ClipboardManager!
     var popover = NSPopover()
-    var writingMode = false
+    var renameMode = false
     var newPrompt = ""
     var deleting = false
+    var searchMode = false
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         clipboard = StorageManager.createClipboard()
@@ -46,17 +47,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func keyDown(with event: NSEvent) -> Bool {
-        if writingMode {
+        if renameMode {
             if event.keyCode == 36 {
                 clipboard.rename(newName: newPrompt)
                 newPrompt = ""
-                writingMode = false
+                renameMode = false
             } else if event.keyCode == 53 {
                 newPrompt = ""
-                writingMode = false
+                renameMode = false
             } else {
                 newPrompt += event.characters ?? ""
             }
+        } else if searchMode {
+            switch event.keyCode {
+                case 51:
+                    if newPrompt.count > 0 {
+                        newPrompt.removeLast()
+                    }
+                case 36:
+                    searchMode = false
+                case 53:
+                    searchMode = false
+                    newPrompt = ""
+                default:
+                    newPrompt += event.characters ?? ""
+            }
+            clipboard.setSearch(search: newPrompt)
         } else if deleting {
             if event.characters == "y" {
                 clipboard.deleteTab()
@@ -93,7 +109,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             case "w":
                 deleting = true
             case "r":
-                writingMode = true
+                renameMode = true
+                newPrompt = ""
+            case "/":
+                clipboard.setActiveTab(tab: "search")
+                newPrompt = ""
+                clipboard.setSearch(search: "")
+                searchMode = true
             default:
                 print("dont knoow")
             }
@@ -160,11 +182,5 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ aNotification: Notification) {
         // Insert code here to tear down your application
         print("Terminating applications")
-    }
-}
-
-struct AppDelegate_Previews: PreviewProvider {
-    static var previews: some View {
-        /*@START_MENU_TOKEN@*/Text("Hello, World!")/*@END_MENU_TOKEN@*/
     }
 }

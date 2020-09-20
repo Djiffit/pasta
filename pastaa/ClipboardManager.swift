@@ -16,12 +16,14 @@ class ClipboardManager: ObservableObject {
     var previous = ""
     var timer = Timer()
     @Published var activeTab = "main"
-    @Published var currentGroups: [String] = ["main"]
+    @Published var currentGroups: [String] = ["search", "main"]
     @Published var activeCopy = ""
     @Published var clipboardGroups = [String : [String]]()
+    @Published var currentSearch = ""
     
     init() {
         clipboardGroups["main"] = []
+        clipboardGroups["search"] = []
 //        clipboardGroups["test"] = ["OG"]
 //        clipboardGroups["masters"] = []
 //        for el in 0...100 {
@@ -46,6 +48,7 @@ class ClipboardManager: ObservableObject {
     func setActiveTab(tab: String) {
         if clipboardGroups.keys.contains(tab) {
             activeTab = tab
+            reset()
         }
     }
     
@@ -69,14 +72,41 @@ class ClipboardManager: ObservableObject {
             changeTab(change: change)
             addCommandToGroup(cmd: temp, group: activeTab)
             activeCopy = temp
+            if activeTab == "search" {
+                moveActiveElem(change: change)
+            }
         }
     }
     
     func shiftTab(change: Int) {
-        let currInd = currentGroups.index(of: activeTab)
+        let currInd = currentGroups.firstIndex(of: activeTab)
         let newPos = mod(currInd! + change, currentGroups.count)
         currentGroups[currInd!] = currentGroups[newPos]
         currentGroups[newPos] = activeTab
+    }
+    
+    func setSearch(search: String) {
+        currentSearch = search.lowercased()
+        if currentSearch.count == 0 {
+            clipboardGroups["search"] = []
+        } else {
+            var elems = [String]()
+            var set: Set<String> = []
+            
+            for group in currentGroups {
+                if group == "search" {
+                    continue
+                }
+                for cmd in clipboardGroups[group]! {
+                    if cmd.lowercased().contains(currentSearch) && !set.contains(cmd) {
+                        elems.append(cmd)
+                        set.insert(cmd)
+                    }
+                }
+            }
+            
+            clipboardGroups["search"] = elems
+        }
     }
     
     func changeElem(change: Int) {

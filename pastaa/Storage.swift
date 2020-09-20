@@ -12,8 +12,10 @@ class StorageManager {
     static func createClipboard() -> ClipboardManager {
         let defaults = UserDefaults.standard
         let clipboard = ClipboardManager()
-        clipboard.currentGroups = defaults.value(forKey: "tabOrder") as! [String]
-        clipboard.clipboardGroups = defaults.value(forKey: "tabData") as! [String: [String]]
+        if defaults.value(forKey: "tabOrder") != nil {
+            clipboard.currentGroups = defaults.value(forKey: "tabOrder") as! [String]
+            clipboard.clipboardGroups = defaults.value(forKey: "tabData") as! [String: [String]]
+        }
         return clipboard
     }
     
@@ -21,6 +23,5 @@ class StorageManager {
         let defaults = UserDefaults.standard
         defaults.setValue(clipboard.currentGroups, forKey: "tabOrder")
         defaults.setValue(clipboard.clipboardGroups, forKey: "tabData")
-        print("saved state", clipboard.currentGroups)
     }
 }
