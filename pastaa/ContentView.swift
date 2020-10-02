@@ -25,7 +25,7 @@ struct Sidebar: View {
                         .padding(.top, 15)
                         .opacity(0.9)
                     
-                }.frame(minWidth: 55, idealWidth: 55, maxWidth: 55, maxHeight: .infinity)
+                }.frame(minWidth: 155, idealWidth: 155, maxWidth: 155, maxHeight: .infinity)
                 .listStyle(SidebarListStyle())
             }
             .opacity(1)
@@ -51,37 +51,75 @@ struct ContentView: View {
     
     @ObservedObject var clipboard: ClipboardManager
     
-    init(clipboardManager: ClipboardManager) {
-        clipboard = clipboardManager
-    }
-    
     var body: some View {
         HStack {
-//            Sidebar(groups: clipboard.currentGroups, activeGroup: clipboard.activeTab)
-      
+//            Sidebar(groups: clipboard.currentGroups.map({ (g) -> String in
+//                return g.title
+//            }), activeGroup: clipboard.currentGroups[clipboard.activeTab].title
+//            )
         VStack {
+            
+//            ZStack {
+//                ForEach(0..<(clipboard.currentGroups.count), id: \.self) { index in
+//                    VStack {
+//
+//                        VStack {
+//                            Text(self.clipboard.statusMessage).multilineTextAlignment(.center).font(.system(size: 11))
+//                            Text(self.clipboard.currentGroups[index].title == "search" ? "Search: " + self.clipboard.currentSearch : " ").multilineTextAlignment(.center).font(.system(size: 11))
+//                        }.padding(.horizontal, 15)
+//                        HistoryRows(group: self.clipboard.currentGroups[index])
+//                        //                        List {
+//                        //                            ForEach((self.clipboard.clipboardGroups[index] ?? []).reversed(), id: \.self) { cmd in
+//                        //                                HStack {hat
+//                        //                                    HistoryRow(text: cmd, active: cmd == self.clipboard.activeCopy, setActive: self.setActive)
+//                        //                                }
+//                        //                                .onTapGesture {
+//                        //                                    self.setActive(elem: cmd)
+//                        //                                }
+//                        ////
+//                        //                            }
+//                        //                        }
+//                    }.isHidden(index != self.clipboard.activeTab)
+//                }
+//            }.padding(.top, 5)
+//
+            
+            
+            
+            
+
             TabView(selection: $clipboard.activeTab) {
-                ForEach(self.clipboard.currentGroups, id: \.self) { group in
+                ForEach(0..<(clipboard.currentGroups.count), id: \.self) { index in
                     VStack {
-                        Text(group == "search" ? "Search: " + self.clipboard.currentSearch : " ")
-                        List {
-                            ForEach((self.clipboard.clipboardGroups[group] ?? []).reversed(), id: \.self) { cmd in
-                                HStack {
-                                    HistoryRow(text: cmd, active: cmd == self.clipboard.activeCopy, setActive: self.setActive)
-                                }
-                                .onTapGesture {
-                                    self.setActive(elem: cmd)
-                                }
-                                
-                            }
-                        }
+                        VStack {
+                            Text(self.clipboard.statusMessage).multilineTextAlignment(.center).font(.system(size: 11))
+                            Text(self.clipboard.currentGroups[index].title == "search" && self.clipboard.currentSearch.count > 0 ? "Search: " + self.clipboard.currentSearch : " ").multilineTextAlignment(.center).font(.system(size: 11))
+                        }.padding(.horizontal, 15)
+                            HistoryRows(group: self.clipboard.currentGroups[index])
+//                        List {
+//                            ForEach((self.clipboard.clipboardGroups[index] ?? []).reversed(), id: \.self) { cmd in
+//                                HStack {hat
+//                                    HistoryRow(text: cmd, active: cmd == self.clipboard.activeCopy, setActive: self.setActive)
+//                                }
+//                                .onTapGesture {
+//                                    self.setActive(elem: cmd)
+//                                }
+////
+//                            }
+//                        }
                     }
                     .tabItem {
-                        Text(group)
+                        Text(self.clipboard.currentGroups[index].title)
                     }
-                    .tag(group)
+                    .tag(index)
                 }
             }.padding(.top, 5)
+            
+            
+            
+            
+            
+            
 //            ZStack {
 //                ForEach(self.clipboard.currentGroups, id: \.self) { group in
 //                    List {
@@ -99,7 +137,7 @@ struct ContentView: View {
 //
 //            }.padding(.top, 5)
         }
-        }
+        }.frame(height: 1000)
     }
 //    List {
 //        ForEach(self.clipboard.clipboardHistory.reversed(), id: \.self) { cmd in
@@ -113,17 +151,17 @@ struct ContentView: View {
 //        }
 //    }.hidden()
     
-    func setActive(elem: String) {
-        if NSEvent.modifierFlags.contains(.command) {
-            if let url = URL(string: elem) {
-                NSWorkspace.shared.open(url)
-            }
-        }
-        if clipboard.activeCopy == elem {
-            self.clipboard.copyToClipboard(msg: elem)
-        }
-        clipboard.activeCopy = elem
-    }
+//    func setActive(elem: String) {
+//        if NSEvent.modifierFlags.contains(.command) {
+//            if let url = URL(string: elem) {
+//                NSWorkspace.shared.open(url)
+//            }
+//        }
+//        if clipboard.activeCopy == elem {
+//            self.clipboard.copyToClipboard(msg: elem)
+//        }
+//        clipboard.activeCopy = elem
+//    }
 }
 
 struct TestView: View {
@@ -139,15 +177,15 @@ struct TestView: View {
 //        }
     }
 }
+//
+//func createClipboardWithData() -> ClipboardManager {
+//    let clip = ClipboardManager()
+//    clip.addData(elems: ["testing", "123"])
+//    return clip
+//}
 
-func createClipboardWithData() -> ClipboardManager {
-    let clip = ClipboardManager()
-    clip.addData(elems: ["testing", "123"])
-    return clip
-}
-
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView(clipboardManager: createClipboardWithData())
-    }
-}
+//struct ContentView_Previews: PreviewProvider {
+//    static var previews: some View {
+//        ContentView(clipboardManager: createClipboardWithData())
+//    }
+//}

@@ -12,23 +12,23 @@ import Cocoa
 import SwiftUI
 
 class ClipboardManager: ObservableObject {
+    static let param = "<param>"
     let interval = 0.25
     var previous = ""
     var timer = Timer()
-    @Published var activeTab = "main"
-    @Published var currentGroups: [String] = ["search", "main"]
-    @Published var activeCopy = ""
-    @Published var clipboardGroups = [String : [String]]()
+    let mainTab = "main"
+    let searchTab = "search"
+    @Published var currentGroups: [Group] = [Group(title: "search"), Group(title: "main")]
+    @Published var activeTab = 0
     @Published var currentSearch = ""
+    @Published var statusMessage = ""
+    
+    var fillingTemplate = false
+    let frozenTabs = ["main", "search"]
     
     init() {
-        clipboardGroups["main"] = []
-        clipboardGroups["search"] = []
-//        clipboardGroups["test"] = ["OG"]
-//        clipboardGroups["masters"] = []
-//        for el in 0...100 {
-//            clipboardGroups["main"]?.append("Tester master \(el)")
-//        }
+        activeTab = 0
+        
         timer = Timer.scheduledTimer(timeInterval: interval, target: self, selector: #selector(self.checkClipboard), userInfo: nil, repeats: true)
         reset()
     }
@@ -36,148 +36,229 @@ class ClipboardManager: ObservableObject {
     @objc
     func checkClipboard() {
         let currClipboard = NSPasteboard.general.string(forType: NSPasteboard.PasteboardType.string)
-        if currClipboard != previous {
-            previous = currClipboard ?? ""
+        if currClipboard != nil && currClipboard?.trimmingCharacters(in: .whitespacesAndNewlines) != previous {
+            previous = (currClipboard?.trimmingCharacters(in: .whitespacesAndNewlines))!
             if previous.count > 0 {
-                addCommandToGroup(cmd: previous, group: "main")
-                StorageManager.saveClipboardState(clipboard: self)
+                if let group = findGroupByName(name: mainTab) {
+                    group.addEntry(entry: Entry(text: previous))
+                    StorageManager.saveClipboardState(clipboard: self)
+                }
             }
         }
     }
     
-    func setActiveTab(tab: String) {
-        if clipboardGroups.keys.contains(tab) {
-            activeTab = tab
-            reset()
+    func findGroupByName(name: String) -> Group? {
+        return currentGroups.first(where: {(group) -> Bool in return group.title == name})
+    }
+    
+    func openSearchTab() {
+        if let ind = currentGroups.firstIndex(where: { (group) -> Bool in return group.title == searchTab }) {
+            activeTab = ind
+            currentGroups[activeTab].reset()
         }
+//        if clipboardGroups.keys.contains(tab.title) {
+//            activeTab = 1
+//            let test = currentGroups.firstIndex(where: { (group) -> Bool in
+//                return group == tab
+//            })
+//            reset()
+//        }
     }
     
-    func removeCommandFromGroup(cmd: String) {
-        clipboardGroups[activeTab] = clipboardGroups[activeTab]?.filter({(x) -> Bool in
-            return x != cmd
-        })
+//    func addCommandToGroup(cmd: Entry, group: Group) {
+//        var entries = clipboardGroups[group.title]
+//        if (entries?.contains(cmd) != nil) {
+//            entries?.removeAll(where: { $0 == cmd })
+//        }
+//        entries?.append(cmd)
+//    }
+    
+    func removeCurrentCmd() {
+        var _ = currentGroups[activeTab].removeCurrentCmd()
     }
     
-    func addCommandToGroup(cmd: String, group: String) {
-        if ((clipboardGroups[group]?.contains(cmd)) != nil) {
-            clipboardGroups[group]?.removeAll(where: { $0 == cmd })
-        }
-        clipboardGroups[group]?.append(cmd)
+    func activeEntry() -> Entry? {
+        return currentGroups[activeTab].activeEntry()
     }
     
+    // Move element to another tab
     func moveActiveElem(change: Int) {
-        if activeCopy != "" {
-            let temp = activeCopy
-            removeCommandFromGroup(cmd: temp)
-            changeTab(change: change)
-            addCommandToGroup(cmd: temp, group: activeTab)
-            activeCopy = temp
-            if activeTab == "search" {
-                moveActiveElem(change: change)
-            }
+        let currTab = currentGroups[activeTab]
+        let targetTab = currentGroups[mod(activeTab + change, currentGroups.count)]
+        if let elem = currTab.removeCurrentCmd() {
+            targetTab.addEntry(entry: elem)
         }
+        activeTab = mod(activeTab + change, currentGroups.count)
+        if currentGroups[activeTab].title == searchTab {
+            moveActiveElem(change: change)
+        }
+//        if activeInd > 0 && activeInd < activeEntries?.count ?? -1 {
+//            let temp = activeEntries[activeInd]
+////            removeCommandFromGroup(cmd: temp)
+////            changeTab(change: change)
+////            addCommandToGroup(cmd: temp, group: activeTab)
+////            activeCopy = temp
+////            if activeTab == searchTab {
+////                moveActiveElem(change: change)
+////            }
+//        }
     }
     
     func shiftTab(change: Int) {
-        let currInd = currentGroups.firstIndex(of: activeTab)
-        let newPos = mod(currInd! + change, currentGroups.count)
-        currentGroups[currInd!] = currentGroups[newPos]
-        currentGroups[newPos] = activeTab
+        let newPos = mod(activeTab + change, currentGroups.count)
+        let newPosGroup = currentGroups[newPos]
+        currentGroups[newPos] = currentGroups[activeTab]
+        currentGroups[activeTab] = newPosGroup
+        activeTab = newPos
+    }
+    
+    func scrollToInd(ind: Int) {
+        currentGroups[activeTab].reset()
+        if currentGroups[activeTab].entries.count > ind && ind >= 0 {
+        }
     }
     
     func setSearch(search: String) {
         currentSearch = search.lowercased()
-        if currentSearch.count == 0 {
-            clipboardGroups["search"] = []
+        let searchGroup = findGroupByName(name: searchTab)!
+        
+        if currentSearch.count < 3 {
+            searchGroup.entries = []
         } else {
-            var elems = [String]()
+            var elems = [Entry]()
             var set: Set<String> = []
             
             for group in currentGroups {
-                if group == "search" {
-                    continue
-                }
-                for cmd in clipboardGroups[group]! {
-                    if cmd.lowercased().contains(currentSearch) && !set.contains(cmd) {
+                if group == searchGroup { continue }
+                for cmd in group.entries {
+                    if cmd.matches(query: currentSearch) && !set.contains(cmd.text) {
                         elems.append(cmd)
-                        set.insert(cmd)
+                        set.insert(cmd.text)
                     }
                 }
             }
             
-            clipboardGroups["search"] = elems
+            searchGroup.entries = elems
+        }
+        
+        searchGroup.reset()
+    }
+    
+    func goToMain() {
+        activeTab = currentGroups.firstIndex(where: { (group) -> Bool in
+            return group.title == mainTab
+        })!
+    }
+    
+    func addDescription(desc: String) {
+        if let entry = currentGroups[activeTab].activeEntry() {
+            entry.description = desc
         }
     }
     
     func changeElem(change: Int) {
-        let currGroup = clipboardGroups[activeTab]!
-        if activeCopy != "" {
-            let currInd = currGroup.firstIndex(of: activeCopy)
-            activeCopy = currGroup[mod(currInd! + change, currGroup.count)]
-        } else {
-            if currGroup.count > 0 {
-                activeCopy = currGroup[currGroup.count - 1]
-            }
-        }
+        currentGroups[activeTab].changePos(change: change)
     }
     
-    func mod(_ a: Int, _ n: Int) -> Int {
-        precondition(n > 0, "modulus must be positive")
-        let r = a % n
-        return r >= 0 ? r : r + n
+    func changeElemPos(change: Int) {
+        currentGroups[activeTab].moveEntry(change: change)
     }
     
     func openLink() {
-        if let link = URL(string: activeCopy) {
-            if activeCopy.contains("/") && activeCopy.contains(".") {
-                NSWorkspace.shared.open((activeCopy.contains("http") ? link : URL(string: "https://" + activeCopy)) ?? link)
-            }
+        currentGroups[activeTab].activeEntry()?.openLink()
+    }
+    
+    func toggleDescription() {
+        if let entry = currentGroups[activeTab].activeEntry() {
+            entry.showDescription = !entry.showDescription
         }
     }
     
+    func insertParam(param: String) -> Bool {
+        if isTemplate(word: statusMessage) {
+            statusMessage = replaceFirst(baseString: statusMessage, replace: param)
+        }
+        return !isTemplate(word: statusMessage)
+    }
+    
+    func insertCurrentParam() -> Bool {
+        if let currentEl = currentGroups[activeTab].activeEntry() {
+            return insertParam(param: currentEl.text.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        return false
+    }
+    
+    func startFilling() {
+        if let currText = currentGroups[activeTab].activeText() {
+            self.statusMessage = currText
+        }
+    }
+    
+    func startFillingAppend() {
+        if let currText = currentGroups[activeTab].activeText() {
+            self.statusMessage = currText + " <param>"
+        }
+    }
+    
+    func isTemplate(word: String) -> Bool {
+        let range = word.range(of: #"<[\w\s]+>"#,
+                                     options: .regularExpression)
+        return range != nil
+    }
+    
+    func replaceFirst(baseString: String, replace: String) -> String {
+        var newString = baseString
+        let range = baseString.range(of: #"<[\w\s]+>"#,
+                         options: .regularExpression)
+        if range != nil {
+            newString.replaceSubrange(range!, with: replace)
+        }
+        return newString
+    }
+    
+    func toggleCurrent() {
+        if let entry = currentGroups[activeTab].activeEntry() {
+            entry.open = !entry.open
+        }
+    }
+    
+    func enterTemplateMode(temp: String) {
+        self.fillingTemplate = true
+        self.statusMessage = "Fill: " + temp
+    }
+    
     func rename(newName: String) {
-        if !currentGroups.contains(newName) && activeTab != "main" {
-            clipboardGroups[newName] = clipboardGroups[activeTab]
-            let ind = currentGroups.firstIndex(of: activeTab)
-            clipboardGroups.removeValue(forKey: activeTab)
-            currentGroups[ind!] = newName
-            activeTab = newName
+        if !currentGroups.contains(where: { (group) -> Bool in return group.title == newName }) && !frozenTabs.contains(newName) {
+            currentGroups[activeTab].rename(newName: newName)
         }
     }
     
     func changeTab(change: Int) {
-        if let currInd = currentGroups.firstIndex(of: activeTab) {
-            activeTab = currentGroups[mod(currInd + change, currentGroups.count)]
-        } else {
-            activeTab = currentGroups[0]
-        }
-        reset()
+        activeTab = mod(activeTab + change, currentGroups.count)
+//        reset()
     }
     
     func deleteTab() {
-        if activeTab != "main" {
-            let removeInd = currentGroups.firstIndex(of: activeTab)!
-            clipboardGroups.removeValue(forKey: activeTab)
-            changeTab(change: -1)
-            currentGroups.remove(at: removeInd)
-        }
-        
-        print(currentGroups, clipboardGroups)
-    }
-    
-    func reset() {
-        if let elems = clipboardGroups[activeTab] {
-            if elems.count > 0 {
-                activeCopy = elems[elems.count - 1]
-            } else {
-                activeCopy = ""
+        if !frozenTabs.contains(currentGroups[activeTab].title) {
+            currentGroups.remove(at: activeTab)
+            if activeTab == currentGroups.count {
+                activeTab -= 1
             }
         }
     }
     
+    func reset() {
+//        if let elems = clipboardGroups[activeTab] {
+//            if elems.count > 0 {
+//                activeInd = elems.count - 1
+//            } else {
+//                activeInd = -1
+//            }
+//        }
+    }
+    
     func createGroup(name: String) {
-        currentGroups.append(name)
-        clipboardGroups[name] = []
+        currentGroups.append(Group(title: name))
     }
     
     func copyToClipboard(msg: String) {
@@ -187,17 +268,17 @@ class ClipboardManager: ObservableObject {
     
     func createTab() {
         var tabName = "new"
-        while currentGroups.contains(tabName) {
+        let tabNames = currentGroups.map { (group) -> String in return group.title }
+        while tabNames.contains(tabName) {
             tabName = tabName + String(Int.random(in: 0...10))
         }
-        currentGroups.append(tabName)
-        clipboardGroups[tabName] = []
-        activeTab = tabName
-        reset()
+        currentGroups.append(Group(title: tabName))
+        activeTab = currentGroups.count - 1
+//        reset()
     }
     
     func copyToClipboard() {
-        copyToClipboard(msg: activeCopy)
+        copyToClipboard(msg: currentGroups[activeTab].activeText()!)
     }
 
     func writeClipboard(content: String) {
@@ -207,9 +288,13 @@ class ClipboardManager: ObservableObject {
     }
     
     
-    func addData(elems: [String]) {
-        clipboardGroups[activeTab]!.append(contentsOf: elems)
-    }
+//    func addData(elems: [Entry]) {
+//        clipboardGroups[activeTab]!.append(contentsOf: elems)
+//    }
 }
 
-
+func mod(_ a: Int, _ n: Int) -> Int {
+    precondition(n > 0, "modulus must be positive")
+    let r = a % n
+    return r >= 0 ? r : r + n
+}

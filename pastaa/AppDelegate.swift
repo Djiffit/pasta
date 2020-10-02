@@ -11,7 +11,6 @@ import SwiftUI
 
 class NSWindowKeypresser: NSWindow {
     var keyListener: (_: NSEvent) -> Bool? = { event in
-        print(event)
         return true
     }
     
@@ -31,10 +30,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var keyboardListener: KeyboardInterceptor!
     var clipboard: ClipboardManager!
     var popover = NSPopover()
-    var renameMode = false
-    var newPrompt = ""
-    var deleting = false
-    var searchMode = false
+    var localKeyboard: KeyboardController!
     
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         clipboard = StorageManager.createClipboard()
@@ -42,91 +38,15 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         AppDelegate.globalWindow = window
         keyboardListener = KeyboardInterceptor(window: window, clip: clipboard)
         createStatusBar()
-        window.keyListener = self.keyDown
+        localKeyboard = KeyboardController(wind: window, keyboard: keyboardListener, clip: clipboard)
+        window.keyListener = localKeyboard.keyDown
         
-    }
-    
-    func keyDown(with event: NSEvent) -> Bool {
-        if renameMode {
-            if event.keyCode == 36 {
-                clipboard.rename(newName: newPrompt)
-                newPrompt = ""
-                renameMode = false
-            } else if event.keyCode == 53 {
-                newPrompt = ""
-                renameMode = false
-            } else {
-                newPrompt += event.characters ?? ""
-            }
-        } else if searchMode {
-            switch event.keyCode {
-                case 51:
-                    if newPrompt.count > 0 {
-                        newPrompt.removeLast()
-                    }
-                case 36:
-                    searchMode = false
-                case 53:
-                    searchMode = false
-                    newPrompt = ""
-                default:
-                    newPrompt += event.characters ?? ""
-            }
-            clipboard.setSearch(search: newPrompt)
-        } else if deleting {
-            if event.characters == "y" {
-                clipboard.deleteTab()
-            }
-            deleting = false
-        } else {
-            switch event.characters {
-            case "k":
-                clipboard.changeElem(change: 1)
-            case "j":
-                clipboard.changeElem(change: -1)
-            case "h":
-                clipboard.changeTab(change: -1)
-            case "l":
-                clipboard.changeTab(change: 1)
-            case "q":
-                clipboard.moveActiveElem(change: -1)
-            case "e":
-                clipboard.moveActiveElem(change: 1)
-            case "H":
-                clipboard.shiftTab(change: -1)
-            case "L":
-                clipboard.shiftTab(change: 1)
-            case "o":
-                clipboard.openLink()
-            case "v":
-                clipboard.copyToClipboard()
-                keyboardListener.closeWindow()
-            case "p":
-                clipboard.copyToClipboard()
-                keyboardListener.closeWindow()
-            case "t":
-                clipboard.createTab()
-            case "w":
-                deleting = true
-            case "r":
-                renameMode = true
-                newPrompt = ""
-            case "/":
-                clipboard.setActiveTab(tab: "search")
-                newPrompt = ""
-                clipboard.setSearch(search: "")
-                searchMode = true
-            default:
-                print("dont knoow")
-            }
-        }
-        return false
     }
     
     override func awakeFromNib() {
         super.awakeFromNib()
         statusBarItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-        statusBarItem?.button?.title = "💩💩📋💩💩"
+        statusBarItem?.button?.title = "💩📋💩"
     }
     
     @objc func togglePopover(_ sender: AnyObject?) {
@@ -141,7 +61,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     func initializeWindow() -> NSWindowKeypresser {
         // Create the SwiftUI view that provides the window contents.
-        let contentView = ContentView(clipboardManager: clipboard)
+        let contentView = ContentView(clipboard: clipboard)
         
         // Create the window and set the content view.
         let window = NSWindowKeypresser(
@@ -160,7 +80,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         window.standardWindowButton(NSWindow.ButtonType.closeButton)!.isHidden = true
         window.standardWindowButton(NSWindow.ButtonType.miniaturizeButton)!.isHidden = true
         window.standardWindowButton(NSWindow.ButtonType.zoomButton)!.isHidden = true
-        //        window.orderOut(nil)
+        window.orderOut(nil)
+        
         
         
         return window
@@ -170,7 +91,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let popover = NSPopover()
         popover.contentSize = NSSize(width: 400, height: 400)
         popover.behavior = .transient
-        popover.contentViewController = NSHostingController(rootView: ContentView(clipboardManager: clipboard))
+        popover.contentViewController = NSHostingController(rootView: ContentView(clipboard: clipboard))
         self.popover = popover
         if let button = self.statusBarItem.button {
             button.image = NSImage(named: "Icon")

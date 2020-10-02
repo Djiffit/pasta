@@ -7,17 +7,20 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BA038118251BC7A400FE6330 /* Entry.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA038117251BC7A400FE6330 /* Entry.swift */; };
+		BA03811D251BD18900FE6330 /* Group.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA03811C251BD18900FE6330 /* Group.swift */; };
+		BA0C059E2517B23500F88D41 /* Storage.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA0C059D2517B23500F88D41 /* Storage.swift */; };
+		BA0C05A6251A87E500F88D41 /* KeyboardController.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA0C05A5251A87E500F88D41 /* KeyboardController.swift */; };
 		BA1EAF5A2515F3BA00133C1E /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA1EAF592515F3BA00133C1E /* AppDelegate.swift */; };
 		BA1EAF5C2515F3BA00133C1E /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA1EAF5B2515F3BA00133C1E /* ContentView.swift */; };
 		BA1EAF5E2515F3BC00133C1E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA1EAF5D2515F3BC00133C1E /* Assets.xcassets */; };
-		BA1EAF612515F3BC00133C1E /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BA1EAF602515F3BC00133C1E /* Preview Assets.xcassets */; };
 		BA1EAF642515F3BC00133C1E /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = BA1EAF622515F3BC00133C1E /* Main.storyboard */; };
 		BA1EAF702515F3BD00133C1E /* pastaaTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA1EAF6F2515F3BD00133C1E /* pastaaTests.swift */; };
 		BA1EAF7B2515F3BD00133C1E /* pastaaUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = BA1EAF7A2515F3BD00133C1E /* pastaaUITests.swift */; };
 		BA1EAF8A2515F4A700133C1E /* HotKey in Frameworks */ = {isa = PBXBuildFile; productRef = BA1EAF892515F4A700133C1E /* HotKey */; };
 		BAE34552251604D20089B404 /* KeyboardInterceptor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAE34551251604D20089B404 /* KeyboardInterceptor.swift */; };
-		BAE345542516139A0089B404 /* Modal.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAE345532516139A0089B404 /* Modal.swift */; };
 		BAE3455625161F760089B404 /* ClipboardManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAE3455525161F760089B404 /* ClipboardManager.swift */; };
+		BAE34558251642B30089B404 /* HistoryRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = BAE34557251642B30089B404 /* HistoryRow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -38,11 +41,14 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		BA038117251BC7A400FE6330 /* Entry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Entry.swift; sourceTree = "<group>"; };
+		BA03811C251BD18900FE6330 /* Group.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Group.swift; sourceTree = "<group>"; };
+		BA0C059D2517B23500F88D41 /* Storage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Storage.swift; sourceTree = "<group>"; };
+		BA0C05A5251A87E500F88D41 /* KeyboardController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardController.swift; sourceTree = "<group>"; };
 		BA1EAF562515F3BA00133C1E /* pastaa.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = pastaa.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BA1EAF592515F3BA00133C1E /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		BA1EAF5B2515F3BA00133C1E /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		BA1EAF5D2515F3BC00133C1E /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		BA1EAF602515F3BC00133C1E /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		BA1EAF632515F3BC00133C1E /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		BA1EAF652515F3BC00133C1E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BA1EAF662515F3BC00133C1E /* pastaa.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = pastaa.entitlements; sourceTree = "<group>"; };
@@ -53,8 +59,8 @@
 		BA1EAF7A2515F3BD00133C1E /* pastaaUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = pastaaUITests.swift; sourceTree = "<group>"; };
 		BA1EAF7C2515F3BD00133C1E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		BAE34551251604D20089B404 /* KeyboardInterceptor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardInterceptor.swift; sourceTree = "<group>"; };
-		BAE345532516139A0089B404 /* Modal.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Modal.swift; sourceTree = "<group>"; };
 		BAE3455525161F760089B404 /* ClipboardManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardManager.swift; sourceTree = "<group>"; };
+		BAE34557251642B30089B404 /* HistoryRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryRow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -112,20 +118,15 @@
 				BA1EAF622515F3BC00133C1E /* Main.storyboard */,
 				BA1EAF652515F3BC00133C1E /* Info.plist */,
 				BA1EAF662515F3BC00133C1E /* pastaa.entitlements */,
-				BA1EAF5F2515F3BC00133C1E /* Preview Content */,
 				BAE34551251604D20089B404 /* KeyboardInterceptor.swift */,
-				BAE345532516139A0089B404 /* Modal.swift */,
 				BAE3455525161F760089B404 /* ClipboardManager.swift */,
+				BAE34557251642B30089B404 /* HistoryRow.swift */,
+				BA0C059D2517B23500F88D41 /* Storage.swift */,
+				BA0C05A5251A87E500F88D41 /* KeyboardController.swift */,
+				BA038117251BC7A400FE6330 /* Entry.swift */,
+				BA03811C251BD18900FE6330 /* Group.swift */,
 			);
 			path = pastaa;
-			sourceTree = "<group>";
-		};
-		BA1EAF5F2515F3BC00133C1E /* Preview Content */ = {
-			isa = PBXGroup;
-			children = (
-				BA1EAF602515F3BC00133C1E /* Preview Assets.xcassets */,
-			);
-			path = "Preview Content";
 			sourceTree = "<group>";
 		};
 		BA1EAF6E2515F3BD00133C1E /* pastaaTests */ = {
@@ -212,7 +213,7 @@
 			isa = PBXProject;
 			attributes = {
 				LastSwiftUpdateCheck = 1170;
-				LastUpgradeCheck = 1170;
+				LastUpgradeCheck = 1200;
 				ORGANIZATIONNAME = "Kutvonen, Konsta";
 				TargetAttributes = {
 					BA1EAF552515F3BA00133C1E = {
@@ -257,7 +258,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				BA1EAF642515F3BC00133C1E /* Main.storyboard in Resources */,
-				BA1EAF612515F3BC00133C1E /* Preview Assets.xcassets in Resources */,
 				BA1EAF5E2515F3BC00133C1E /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -283,11 +283,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BA03811D251BD18900FE6330 /* Group.swift in Sources */,
+				BA038118251BC7A400FE6330 /* Entry.swift in Sources */,
+				BA0C05A6251A87E500F88D41 /* KeyboardController.swift in Sources */,
 				BAE3455625161F760089B404 /* ClipboardManager.swift in Sources */,
+				BA0C059E2517B23500F88D41 /* Storage.swift in Sources */,
 				BAE34552251604D20089B404 /* KeyboardInterceptor.swift in Sources */,
 				BA1EAF5C2515F3BA00133C1E /* ContentView.swift in Sources */,
+				BAE34558251642B30089B404 /* HistoryRow.swift in Sources */,
 				BA1EAF5A2515F3BA00133C1E /* AppDelegate.swift in Sources */,
-				BAE345542516139A0089B404 /* Modal.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -360,6 +364,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -420,6 +425,7 @@
 				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
 				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
 				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
 				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
 				CLANG_WARN_STRICT_PROTOTYPES = YES;
 				CLANG_WARN_SUSPICIOUS_MOVE = YES;
@@ -452,6 +458,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = pastaa/pastaa.entitlements;
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"pastaa/Preview Content\"";
@@ -473,6 +480,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_ENTITLEMENTS = pastaa/pastaa.entitlements;
+				CODE_SIGN_IDENTITY = "-";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"pastaa/Preview Content\"";

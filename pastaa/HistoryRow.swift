@@ -9,39 +9,85 @@
 import Foundation
 import SwiftUI
 
+func getDescription(group: Group) -> String {
+    if let entry = group.activeEntry() {
+        return entry.description + " "
+    }
+    return " "
+}
+struct HistoryRows: View {
+    @ObservedObject
+    var group: Group
+    
+    var body: some View {
+        VStack {
+            
+            Text(getDescription(group: group))
+                .multilineTextAlignment(.center)
+                .font(.system(size: 10))
+            ZStack(alignment: .top) {
+                HStack(alignment: .top) {
+                    Text(group.entries.count == 0 ? "" : "\(group.entries.count - group.activeInd) / \(group.entries.count)")
+                }
+                .zIndex(30303)
+                .multilineTextAlignment(.center)
+                .font(.system(size: 9))
+                .frame(height: 1)
+                List {
+                    ForEach(group.getWindow(), id: \.self) { cmd in
+                        HStack {
+                            HistoryRow(entry: cmd, active: group.isActive(entry: cmd))
+                        }
+                        .onTapGesture {
+                            group.setActive(entry: cmd)
+                        }
+                    }
+                }.padding(.top, 10)
+                
+            }
+        }
+    }
+}
+
+func getText(entry: Entry, active: Bool) -> String {
+    if !active {
+        return entry.displayText
+    }
+    if entry.showDescription && entry.description.count > 0 {
+        return entry.description
+    }
+    if entry.open {
+        return entry.text
+    }
+    return entry.displayText
+}
 
 struct HistoryRow: View {
-    var text: String
-    var link: Bool
-    var setActive: (_: String) -> Void
-    let active: Bool
+    @ObservedObject
+    var entry: Entry
+    var active: Bool
     
-    init(text: String, active: Bool, setActive: @escaping (_: String) -> Void) {
-        self.text = text.split(separator: "\n").map({(cmd) -> String in
-            return cmd.trimmingCharacters(in: .whitespacesAndNewlines)
-        } ).joined(separator: " ")
-        link = URL(string: text) != nil && text.contains("/") && text.contains(".")
-        self.active = active
-        self.setActive = setActive
-    }
     
     var body: some View {
         VStack() {
             VStack(alignment: .center) {
-                Text(text)
-                    .underline(link)
-//                    .foregroundColor(link ? .blue : .green)
-                    .foregroundColor(active ? Color(NSColor.controlTextColor) : Color(NSColor.textColor))
-                    .font(.system(size: 12))
-                    .fontWeight(.light)
-                    .lineLimit(1)
-                    .frame(height: 10)
+                Text(getText(entry: entry, active: active))
+                    .underline(entry.link)
+                    .foregroundColor(active ? Color.white : Color(NSColor.textColor))
+                    .font(.system(size: 13))
+//                    .fontWeight(active ? .regular : .light)
+                    .multilineTextAlignment(.leading)
+                    .lineLimit((entry.open && active) ? nil : 1)
+	
+                    .frame(height: (entry.open && active) ? nil : 10)
                 
             }.padding(.vertical, 1).padding(.top, 8).padding(.horizontal, 20)
             Divider()
-        }.padding(.horizontal, 15).background(active ? Color(NSColor.selectedTextBackgroundColor): Color(NSColor.textBackgroundColor)).cornerRadius(5).overlay(
-            RoundedRectangle(cornerRadius: 5)
-                .stroke(Color.gray.opacity(0.25), lineWidth: 1)).padding(.horizontal, 10)
+        }.padding(.horizontal, 15)
+        .background(active ? Color(NSColor.controlAccentColor): Color(NSColor.windowBackgroundColor))
+        .cornerRadius(15).overlay(
+            RoundedRectangle(cornerRadius: 15)
+                .stroke(active ? Color(NSColor.controlAccentColor).opacity(0.25) : Color.gray.opacity(0.25), lineWidth: 1)).padding(.horizontal, 10)
     }
 }
 
@@ -50,3 +96,4 @@ struct HistoryRow: View {
 //        HistoryRow(text: "testing this thing\nkopewoprkew\nasdfsadfsadf\nasdfsadfsadf\nasdfasdfsadfsadf\nasdfasdfsadf", true)
 //    }
 //}
+

@@ -27,10 +27,6 @@ class KeyboardInterceptor {
                 window.orderOut(nil)
             }
         })
-        hotKey.keyDownHandler = { [weak self] in
-            clip.copyToClipboard(msg: "asdasdASD")
-            print(app.isHidden, app.isActive, window.isVisible, window.canHide)
-        }
         
         toggleWindow.keyDownHandler = { [weak self] in
             self?.toggleWindowState()
@@ -61,7 +57,9 @@ class KeyboardInterceptor {
             window.center()
         }
     }
-    
 }
 
 
+//2020-10-02 11:27:04.149345+0300 pastaa[91807:10614037] Fatal error: Duplicate keys of type 'Entry' were found in a Dictionary.
+//This usually means either that the type violates Hashable's requirements, or
+//that members of such a dictionary were mutated after insertion.
